@@ -354,14 +354,16 @@ output_count <- char_count %>%
     lng2 = -88.505825,
     lat1 = 37.715583,
     lat2 = 30.038578
-  ) %>% 
-  addTitle(text="Counts and rates of Covid 19",
+  )  %>% 
+  addTitle(text = "Counts and rates of Covid 19",
     color = "black",
     fontSize = "25px",
     fontFamily = "Sans",
     leftPosition = 15,
     topPosition = 2) %>% 
-  addTitle(text="New York Time: 04/10/2020",
+  addTitle(text = as.character(
+    glue("Source: github.com/nytimes/covid-19-data <br/> updated {today()}")
+  ),
     color = "black",
     fontSize = "15px",
     fontFamily = "Sans",
