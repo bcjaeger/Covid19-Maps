@@ -24,19 +24,78 @@ county_acs5 <- read_rds('data/county_acs5_AL_2018.rds')
 covid <- read_csv(nyt) %>%
   filter(state == "Alabama") %>%
   left_join(county_acs5, by = "county") %>%
-  mutate(cases_rate = cases / pop * 10000,
-    deaths_rate = deaths / pop * 10000)
+  mutate(
+    cases_rate = cases / pop * 10000,
+    deaths_rate = deaths / pop * 10000
+  ) 
+
+blank <- covid %>% 
+  ungroup() %>% 
+  select(county) %>% 
+  distinct()
+
+# after merging, non-existent case values will be NA
+# we will assume those are 0
+na_to_zero <- function(x){
+  x[is.na(x)] <- 0
+  x
+}
+
+# create a dataset for each date
+covid_alldays <- covid %>% 
+  select(date, county, cases, deaths) %>% 
+  split(covid, f = .$date) %>% 
+  # merge, set NA to zero and fill in dates
+  # and, as a bonus, make the names more clear
+  map_dfr(covid_lags, 
+    .f = ~right_join(.x, blank, by = 'county') %>% 
+      mutate(
+        cases = na_to_zero(cases),
+        deaths = na_to_zero(deaths)
+      ) %>% 
+      tidyr::fill(date)
+  ) %>% 
+  rename(cases_total = cases, deaths_total = deaths)
+
+safe_ma_ratio <- function(numerator, denominator){
+  
+  # take the averages
+  mn_numerator <- mean(numerator)
+  mn_denominator <- mean(denominator)
+  
+  # dont explode if denom is 0
+  if(mn_denominator == 0) return(1)
+
+  mn_numerator / mn_denominator
+  
+}
+
+covid_lags <- covid_alldays %>% 
+  group_by(county) %>% 
+  arrange(county, desc(date)) %>%
+  slice(1:7) %>%
+  arrange(county, date) %>% 
+  # create case rate and death rate
+  mutate(
+    cases_new = cases_total - lag(cases_total, default = 0),
+    deaths_new = deaths_total - lag(deaths_total, default = 0)
+  ) %>% 
+  slice(-1) %>% 
+  summarise(
+    cases_ma_ratio = safe_ma_ratio(cases_new[4:6], cases_new[1:3]),
+    deaths_ma_ratio = safe_ma_ratio(deaths_new[4:6], deaths_new[1:3])
+  )
 
 covid_count = covid %>% 
-  group_by(county) %>% 
+  group_by(county) %>%
   summarise(
     sum_cases = max(cases), 
     sum_deaths = max(deaths),
     sum_cases_rate = plyr::round_any(max(cases_rate),0.01),
     sum_deaths_rate = plyr::round_any(max(deaths_rate),0.01),
-    pop = max(pop)
-  )
-
+    pop = pop[1] # population is constant, needs to be retained
+  ) %>% 
+  left_join(covid_lags, by = 'county')
 
 char_count <- counties(cb = TRUE, state = "AL") %>% 
   geo_join(
