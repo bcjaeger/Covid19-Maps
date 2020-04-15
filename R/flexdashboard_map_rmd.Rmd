@@ -1,0 +1,291 @@
+---
+title: "COVID 19 Alabama"
+runtime: shiny
+output: 
+  flexdashboard::flex_dashboard:
+  orientation: rows
+vertical_layout: fill
+social: menu
+theme: simplex
+---
+
+```{r setup, include=FALSE}
+#knitr::opts_knit$set(root.dir = 'C:/Users/dmlong/Documents/GitHub/Covid19-Maps' )
+
+library(flexdashboard)  
+library(plotly) 
+    
+#Call create_map_chart_data to set up files for map
+setwd("..")
+source("R/create_map_chart_data.R")
+source("R/AddTitle.R")
+
+
+metro <- reactive({
+
+  m <- covid[covid$NAME == input$county_name, ]
+
+  return(m)
+
+})
+
+
+```
+
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Map 
+
+```{r}
+
+output$map <- renderLeaflet({
+map <-char_count %>%
+  leaflet() %>%
+  # add base map; this is blank to keep the plot from being too busy
+  # minzoom = 7 keeps the user focussed on the southeastern US
+  addProviderTiles("CartoDB.Positron", 
+    options = tileOptions(minZoom = 6)) %>%
+  # add counties
+  addPolygons(
+    fillColor = ~ pal1(sum_cases),
+    weight = 2,
+    opacity = 0.3,
+    color = "white",
+    dashArray = "3",
+    fillOpacity = 0.7,
+   # popup = popupGraph(p1),
+    highlight = highlightOptions(
+      weight = 2,
+      color = "#666",
+      dashArray = "",
+      fillOpacity = 0.7,
+      bringToFront = TRUE
+    ),
+    label = labels,
+    labelOptions = labelOptions(textsize = "15px"),
+    group = "Cases, total",
+   layerId = ~NAME1
+  )   %>%
+  addPolygons(
+    fillColor = ~ pal2(sum_deaths),
+    weight = 2,
+    opacity = 0.3,
+    color = "white",
+    dashArray = "3",
+    fillOpacity = 0.7,
+   # popup = popupGraph(p2),
+    highlight = highlightOptions(
+      weight = 2,
+      color = "#666",
+      dashArray = "",
+      fillOpacity = 0.7,
+      bringToFront = TRUE
+    ),
+    label = labels,
+    labelOptions = labelOptions(textsize = "15px"),
+    group = "Deaths, total" , layerId = ~NAME2
+  ) %>%
+  # add counties
+  addPolygons(
+    fillColor = ~ pal3(sum_cases_rate),
+    weight = 2,
+    opacity = 0.3,
+    color = "white",
+    dashArray = "3",
+    fillOpacity = 0.7,
+   # popup = popupGraph(p3),
+    highlight = highlightOptions(
+      weight = 2,
+      color = "#666",
+      dashArray = "",
+      fillOpacity = 0.7,
+      bringToFront = TRUE
+    ),
+    label = labels,
+    labelOptions = labelOptions(textsize = "15px"),
+    group = "Cases, rate" , layerId = ~NAME3
+  )  %>%
+  addPolygons(
+    fillColor = ~ pal4(sum_deaths_rate),
+    weight = 2,
+    opacity = 0.3,
+    color = "white",
+    dashArray = "3",
+    fillOpacity = 0.7,
+   # popup = popupGraph(p4),
+    highlight = highlightOptions(
+      weight = 2,
+      color = "#666",
+      dashArray = "",
+      fillOpacity = 0.7,
+      bringToFront = TRUE
+    ),
+    label = labels,
+    labelOptions = labelOptions(textsize = "15px"),
+    group = "Deaths, rate" , layerId = ~NAME4
+  ) %>% 
+  addLayersControl(
+    position = "topleft",
+    baseGroups = c("Cases, total", "Deaths, total", 
+      "Cases, rate", "Deaths, rate"),
+    options = layersControlOptions(collapsed = FALSE)
+  ) %>%
+  addLegend(
+    pal = pal1,
+    values = ~ sum_cases,
+    opacity = 0.7,
+    title = htmltools::HTML("Cases per <br> County"),
+    position = "bottomright",
+    group = "Cases, total"
+  ) %>%
+  addLegend(
+    pal = pal2,
+    values = ~ sum_deaths,
+    opacity = 0.7,
+    title = htmltools::HTML("Deaths per <br> County"),
+    position = "bottomright",
+    group = "Deaths, total"
+  ) %>%
+  addLegend(pal = pal3,
+    values = ~sum_cases_rate,
+    opacity = 0.7,
+    title = htmltools::HTML("Case Rate <br> per 10,000"),
+    position = "bottomleft",
+    group="Cases, rate"
+  ) %>% 
+  addLegend(pal = pal4,
+    values = ~sum_deaths_rate,
+    opacity = 0.7,
+    title = htmltools::HTML("Death rate <br> per 10,000"),
+    position = "bottomleft",
+    group="Deaths, rate"
+  ) 
+  
+map
+  
+})  
+
+click_county <- eventReactive(input$map_shape_click, {
+  x <- input$map_shape_click
+  y <- x$id
+  return(y)
+})
+
+
+# observeEvent(input$map_shape_click, { # update the location selectInput on map clicks
+#   p <- input$map_shape_click
+#   y <- str_remove(p$id," L2| L3| L4")
+#   
+#   print(y)
+# })
+
+# Drag event for the scatterplot; will grab county of selected points
+# sub <- reactive({
+#   eventdata <- event_data('plotly_selected', source = 'source')
+#   
+#   if (is.null(eventdata)) {
+#     
+#     return(NULL) # do nothing
+#     
+#   } else {
+#     
+#     counties1 <- eventdata[['key']]
+#     
+#     if (length(counties1) == 0) {
+#       
+#       counties1 <- 'abcdefg' # a hack but it's working - set to something that can't be selected
+#       
+#     }
+#     
+#     if (!(counties1 %in% metro()$NAME)) {
+#       
+#       return(NULL) # if there is not a match, do nothing as well
+#       
+#     } else {
+#       
+#       # Give back a sp data frame of the selected counties
+#       sub <- metro()[metro()$NAME %in% counties1, ]
+#       return(sub)
+#       
+#     }
+#     
+#   }
+# })
+# 
+county_data <- reactive({
+
+  # Fetch data for the clicked tract
+  return(covid_count[covid_count$NAME == str_remove(click_county()," L2| L3| L4"),])
+})
+leafletOutput('map')  
+
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Table
+
+```{r}
+renderTable({
+  county_data()
+})
+
+```
+
+### Line Graph
+
+```{r}
+# Here, we draw the diversity gradient with ggplotly
+
+
+ output$scatter <- renderPlotly({
+   
+   cc=str_remove(click_county()," L2| L3| L4")
+   
+   if(is.null(cc)){
+     cc = "Jefferson County, Alabama"
+   }
+   
+
+  index = which(counties==cc)
+  
+if(str_detect(click_county(),"L2|L3|L4")==F){
+
+  p1a = p1[[index]]
+  
+}
+  
+  if(str_detect(click_county(),"L2")==T){
+
+  p1a = p2[[index]]
+  
+  }
+  
+if(str_detect(click_county(),"L3")==T){
+
+  p1a = p3[[index]]
+  
+}
+  
+if(str_detect(click_county(),"L4")==T){
+
+  p1a = p4[[index]]
+  
+}
+
+  g = ggplotly(p1a)
+
+  build <- plotly_build(g)
+
+  build
+
+
+ })
+ plotlyOutput('scatter')
+
+```
+
