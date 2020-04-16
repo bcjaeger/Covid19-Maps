@@ -17,16 +17,12 @@ library(plotly)
     
 #Call create_map_chart_data to set up files for map
 source("R/create_map_chart_data.R")
+#Get AddTitle function
 source("R/AddTitle.R")
 
 
-metro <- reactive({
-
-  m <- covid[covid$NAME == input$county_name, ]
-
-  return(m)
-
-})
+states <- aggregate(char_count[, "STATEFP"], by = list(ID = char_count@data$STATEFP), 
+                    FUN = unique, dissolve = T)
 
 
 ```
@@ -39,6 +35,7 @@ Column {data-width=650}
 
 ```{r}
 
+#Create Map output
 output$map <- renderLeaflet({
 map <-char_count %>%
   leaflet() %>%
@@ -46,15 +43,15 @@ map <-char_count %>%
   # minzoom = 7 keeps the user focussed on the southeastern US
   addProviderTiles("CartoDB.Positron", 
     options = tileOptions(minZoom = 6)) %>%
-  # add counties
+  # add layer one of counties: Case
   addPolygons(
     fillColor = ~ pal1(sum_cases),
-    weight = 2,
+    weight = 1,
     opacity = 0.3,
-    color = "white",
+    color = "black",
     dashArray = "3",
     fillOpacity = 0.7,
-   # popup = popupGraph(p1),
+   # popup = popupGraph(p1),   #Removed for Shiny app
     highlight = highlightOptions(
       weight = 2,
       color = "#666",
@@ -69,9 +66,9 @@ map <-char_count %>%
   )   %>%
   addPolygons(
     fillColor = ~ pal2(sum_deaths),
-    weight = 2,
+    weight = 1,
     opacity = 0.3,
-    color = "white",
+    color = "black",
     dashArray = "3",
     fillOpacity = 0.7,
    # popup = popupGraph(p2),
@@ -89,9 +86,9 @@ map <-char_count %>%
   # add counties
   addPolygons(
     fillColor = ~ pal3(sum_cases_rate),
-    weight = 2,
+    weight = 1,
     opacity = 0.3,
-    color = "white",
+    color = "black",
     dashArray = "3",
     fillOpacity = 0.7,
    # popup = popupGraph(p3),
@@ -108,9 +105,9 @@ map <-char_count %>%
   )  %>%
   addPolygons(
     fillColor = ~ pal4(sum_deaths_rate),
-    weight = 2,
+    weight = 1,
     opacity = 0.3,
-    color = "white",
+    color = "black",
     dashArray = "3",
     fillOpacity = 0.7,
    # popup = popupGraph(p4),
@@ -130,7 +127,9 @@ map <-char_count %>%
     baseGroups = c("Cases, total", "Deaths, total", 
       "Cases, rate", "Deaths, rate"),
     options = layersControlOptions(collapsed = FALSE)
-  ) %>%
+  ) %>% 
+  #Adds the darker lines for state borders
+  addPolylines(data = states, color = "black", opacity = 1, weight = 3) %>%
   addLegend(
     pal = pal1,
     values = ~ sum_cases,
@@ -166,6 +165,8 @@ map
   
 })  
 
+#Get ID from layer clicks, must be unique for each layer
+
 click_county <- eventReactive(input$map_shape_click, {
   x <- input$map_shape_click
   y <- x$id
@@ -173,49 +174,11 @@ click_county <- eventReactive(input$map_shape_click, {
 })
 
 
-# observeEvent(input$map_shape_click, { # update the location selectInput on map clicks
-#   p <- input$map_shape_click
-#   y <- str_remove(p$id," L2| L3| L4")
-#   
-#   print(y)
-# })
 
-# Drag event for the scatterplot; will grab county of selected points
-# sub <- reactive({
-#   eventdata <- event_data('plotly_selected', source = 'source')
-#   
-#   if (is.null(eventdata)) {
-#     
-#     return(NULL) # do nothing
-#     
-#   } else {
-#     
-#     counties1 <- eventdata[['key']]
-#     
-#     if (length(counties1) == 0) {
-#       
-#       counties1 <- 'abcdefg' # a hack but it's working - set to something that can't be selected
-#       
-#     }
-#     
-#     if (!(counties1 %in% metro()$NAME)) {
-#       
-#       return(NULL) # if there is not a match, do nothing as well
-#       
-#     } else {
-#       
-#       # Give back a sp data frame of the selected counties
-#       sub <- metro()[metro()$NAME %in% counties1, ]
-#       return(sub)
-#       
-#     }
-#     
-#   }
-# })
-# 
+
 county_data <- reactive({
 
-  # Fetch data for the clicked tract
+  # Fetch data for the clicked county using click_county by removing the L* from the   # string which was added to create uniqueness
   return(
     covid_count[covid_count$NAME == str_remove(click_county()," L2| L3| L4"),] %>% select(NAME,pop,white,black,asian,sum_cases,sum_deaths,sum_cases_rate,sum_deaths_rate)
     )
@@ -270,50 +233,42 @@ DT::renderDataTable({
 # Here, we draw the diversity gradient with ggplotly
 
 
- output$scatter <- renderPlotly({
-   
-   cc=str_remove(click_county()," L2| L3| L4")
-   
-   if(is.null(cc)){
-     cc = "Jefferson County, Alabama"
-   }
-   
-
-  index = which(counties==cc)
+output$scatter <- renderPlotly({
   
-if(str_detect(click_county(),"L2|L3|L4")==F){
-
-  p1a = p1[[index]]
+  # Remove L* from layer ID to determine the correct county
+  cc=str_remove(click_county()," L2| L3| L4")
   
-}
-  
-  if(str_detect(click_county(),"L2")==T){
-
-  p1a = p2[[index]]
-  
+  if(is.null(cc)){
+    cc = "Jefferson County, Alabama"
   }
   
-if(str_detect(click_county(),"L3")==T){
-
-  p1a = p3[[index]]
+  #Find the row number for the clicked county to locate plot
+  index = which(counties==cc)
   
-}
+  #If statements to pick appropriate plot based on current layer and ID
+  if(str_detect(click_county(),"L2|L3|L4")==F){
+    p1a = p1[[index]]
+  }
   
-if(str_detect(click_county(),"L4")==T){
-
-  p1a = p4[[index]]
+  if(str_detect(click_county(),"L2")==T){
+    p1a = p2[[index]]
+  }
   
-}
-
+  if(str_detect(click_county(),"L3")==T){
+    p1a = p3[[index]]
+  }
+  
+  if(str_detect(click_county(),"L4")==T){
+    p1a = p4[[index]]
+  }
+  
   g = ggplotly(p1a)
-
+  
   build <- plotly_build(g)
-
+  
   build
-
-
- })
- plotlyOutput('scatter')
+})
+plotlyOutput('scatter')
 
 ```
 

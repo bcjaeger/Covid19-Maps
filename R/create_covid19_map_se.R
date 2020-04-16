@@ -4,6 +4,9 @@
 source("R/create_map_chart_data.R")
 source("R/AddTitle.R")
 
+states <- aggregate(char_count[, "STATEFP"], by = list(ID = char_count@data$STATEFP), 
+                    FUN = unique, dissolve = T)
+
 output_count <-char_count %>%
   leaflet() %>%
   # add base map; this is blank to keep the plot from being too busy
@@ -13,12 +16,12 @@ output_count <-char_count %>%
   # add counties
   addPolygons(
     fillColor = ~ pal1(sum_cases),
-    weight = 2,
-    opacity = 0.3,
-    color = "white",
+    weight = 1,
+    opacity = 1,
+    color = "black",
     dashArray = "3",
     fillOpacity = 0.7,
-    popup = popupGraph(p1),
+    #popup = popupGraph(p1),
     highlight = highlightOptions(
       weight = 2,
       color = "#666",
@@ -30,6 +33,7 @@ output_count <-char_count %>%
     labelOptions = labelOptions(textsize = "15px"),
     group = "Cases, total"
   )   %>%
+  addPolylines(data = states, color = "black", opacity = 1, weight = 3) %>%
   addPolygons(
     fillColor = ~ pal2(sum_deaths),
     weight = 2,
