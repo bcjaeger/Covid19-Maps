@@ -34,7 +34,10 @@ covid_count = covid %>%
     sum_deaths = max(deaths),
     sum_cases_rate = plyr::round_any(max(cases_rate),0.01),
     sum_deaths_rate = plyr::round_any(max(deaths_rate),0.01),
-    pop = max(pop)
+    pop = max(pop),
+    white=max(white),
+    black=max(black),
+    asian=max(asian)
   )
 
 
@@ -52,6 +55,7 @@ char_count@data = char_count@data  %>%
          NAME3 = paste(NAME1,"L3"), 
          NAME4 = paste(NAME1,"L4"))
 
+
 char_count = char_count %>% 
   geo_join(
     covid_count,
@@ -59,6 +63,8 @@ char_count = char_count %>%
     by_df = "NAME",
     how = "left"
   )
+
+
 
 # create labels for counties
 

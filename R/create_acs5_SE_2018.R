@@ -16,7 +16,7 @@ county_acs5_se <- read_acs5year(
   ),
   summary_level = "050"
 ) %>% 
-  dplyr::select(GEOID,population,NAME) %>% 
+ # dplyr::select(GEOID,population,NAME) %>% 
   rename(pop=population)
 
 write_rds(county_acs5_se, 'data/county_acs5_SE_2018.rds')

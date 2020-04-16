@@ -1,5 +1,5 @@
 ---
-title: "COVID 19 Alabama"
+title: "COVID 19: AL, MS, LA"
 runtime: shiny
 output: 
   flexdashboard::flex_dashboard:
@@ -16,7 +16,6 @@ library(flexdashboard)
 library(plotly) 
     
 #Call create_map_chart_data to set up files for map
-setwd("..")
 source("R/create_map_chart_data.R")
 source("R/AddTitle.R")
 
@@ -229,15 +228,16 @@ leafletOutput('map')
 Column {data-width=350}
 -----------------------------------------------------------------------
 
-### Demographic Table 
+### Demographic Table {data-height=250}
 
 ```{r}
 
 
 DT::renderDataTable({
   DT::datatable(county_data()[1:5], 
-                options = list(bPaginate = FALSE,   scrollX = T,
+                options = list(bPaginate = FALSE,   scrollX = T, scrollY=T,
                                 searching = F),
+                class="compact cell-border",
       colnames = c("County", "Total Population","Whites","Blacks","Asians")
   )
 })
@@ -245,15 +245,16 @@ DT::renderDataTable({
 
 ```
 
-### Covid Table 
+### Covid Table {data-height=250}
 
 ```{r}
 
 
 DT::renderDataTable({
   DT::datatable(county_data()[c(1,6:9)], 
-                options = list( bPaginate = FALSE,   scrollX = T,
+                options = list( bPaginate = FALSE,   scrollX = T,scrollY=T,
                                 searching = F),
+                class="compact cell-border",
     colnames = c("County","Total Cases","Total Deaths",
                  "Case Rate","Death Rate")
   )

@@ -1,0 +1,12 @@
+name: Covid_Maps
+title: Covid_Maps
+username:
+account: dustin-long
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2124320
+bundleId: 3019100
+url: https://dustin-long.shinyapps.io/Covid_Maps/
+when: 1586984539.62592
+asMultiple: FALSE
+asStatic: FALSE
