@@ -36,9 +36,9 @@ output_count <-char_count %>%
   addPolylines(data = states, color = "black", opacity = 1, weight = 3) %>%
   addPolygons(
     fillColor = ~ pal2(sum_deaths),
-    weight = 2,
+    weight = 1,
     opacity = 0.3,
-    color = "white",
+    color = "black",
     dashArray = "3",
     fillOpacity = 0.7,
     popup = popupGraph(p2),
@@ -56,9 +56,9 @@ output_count <-char_count %>%
   # add counties
   addPolygons(
     fillColor = ~ pal3(sum_cases_rate),
-    weight = 2,
+    weight = 1,
     opacity = 0.3,
-    color = "white",
+    color = "black",
     dashArray = "3",
     fillOpacity = 0.7,
     popup = popupGraph(p3),
@@ -75,9 +75,9 @@ output_count <-char_count %>%
   )  %>%
   addPolygons(
     fillColor = ~ pal4(sum_deaths_rate),
-    weight = 2,
+    weight = 1,
     opacity = 0.3,
-    color = "white",
+    color = "black",
     dashArray = "3",
     fillOpacity = 0.7,
     popup = popupGraph(p4),
