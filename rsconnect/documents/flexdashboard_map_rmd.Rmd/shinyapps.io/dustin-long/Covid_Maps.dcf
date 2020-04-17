@@ -5,8 +5,8 @@ account: dustin-long
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 2124320
-bundleId: 3019100
+bundleId: 3024028
 url: https://dustin-long.shinyapps.io/Covid_Maps/
-when: 1586984539.62592
+when: 1587070549.20053
 asMultiple: FALSE
 asStatic: FALSE

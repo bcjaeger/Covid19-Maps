@@ -14,6 +14,7 @@ theme: simplex
 
 library(flexdashboard)  
 library(plotly) 
+library(rgeos)
     
 #Call create_map_chart_data to set up files for map
 source("R/create_map_chart_data.R")
@@ -21,7 +22,8 @@ source("R/create_map_chart_data.R")
 source("R/AddTitle.R")
 
 
-states <- aggregate(char_count[, "STATEFP"], by = list(ID = char_count@data$STATEFP), 
+states <- aggregate(char_count[, "STATEFP"], 
+                    by = list(ID = char_count@data$STATEFP), 
                     FUN = unique, dissolve = T)
 
 

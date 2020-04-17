@@ -16,7 +16,7 @@ options(tigris_use_cache = TRUE)
 
 nyt <- "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv"
 
-county_acs5_se <- read_rds('data/county_acs5_SE_2018.rds')
+county_acs5_se <- readr::read_rds('data/county_acs5_SE_2018.rds')
 
 covid <- read_csv(nyt) %>%
   filter(state %in% c("Alabama","Mississippi","Louisiana")) %>%
