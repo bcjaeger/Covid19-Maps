@@ -60,8 +60,8 @@ covid_alldays <- covid %>%
 safe_ma_ratio <- function(numerator, denominator){
   
   # take the averages
-  mn_numerator <- mean(numerator)
-  mn_denominator <- mean(denominator)
+  mn_numerator   <- mean(numerator, na.rm = TRUE)
+  mn_denominator <- mean(denominator, na.rm = TRUE)
   
   # dont explode if denom is 0
   if(mn_denominator == 0) return(1)
