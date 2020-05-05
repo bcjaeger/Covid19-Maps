@@ -168,7 +168,7 @@ for(i in seq(nrow(counties))) {
     geom_point(color = 'darkgreen') + 
     scale_x_date(
       limits = c(min(ggdata$date), today()),
-      date_breaks = "5 days",
+      date_breaks = "20 days",
       labels = scales::date_format("%b-%d")
     ) + 
     scale_y_continuous(limits = c(ymin, ymax), 
@@ -200,7 +200,7 @@ for(i in seq(nrow(counties))) {
     geom_point(color = 'darkblue') + 
     scale_x_date(
       limits = c(min(ggdata$date), today()),
-      date_breaks = "5 days",
+      date_breaks = "20 days",
       labels = scales::date_format("%b-%d")
     ) + 
     scale_y_continuous(limits = c(ymin, ymax), 
@@ -234,7 +234,7 @@ for(i in seq(nrow(counties))) {
     geom_point(color = 'darkgreen') + 
     scale_x_date(
       limits = c(min(ggdata$date), today()),
-      date_breaks = "5 days",
+      date_breaks = "20 days",
       labels = scales::date_format("%b-%d")
     ) + 
     scale_y_continuous(limits = c(ymin, ymax), 
@@ -266,7 +266,7 @@ for(i in seq(nrow(counties))) {
     geom_point(color = 'darkblue') + 
     scale_x_date(
       limits = c(min(ggdata$date), today()),
-      date_breaks = "5 days",
+      date_breaks = "20 days",
       labels = scales::date_format("%b-%d")
     ) + 
     scale_y_continuous(limits = c(ymin, ymax), 
