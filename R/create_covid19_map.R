@@ -108,38 +108,38 @@ char_count <- counties(cb = TRUE, state = "AL") %>%
 # create labels for counties
 
 labels <- glue(
-  "<strong>{char_count@data$NAME} County </strong> <br/>",
-  "Population: {char_count@data$pop} <br/>",
-  "Cases, total {char_count@data$sum_cases} <br/>",
-  "Deaths, total: {char_count@data$sum_deaths} <br/>",
-  "Cases, rate: {char_count@data$sum_cases_rate} <br/>",
-  "Deaths, rate: {char_count@data$sum_deaths_rate} <br/>"
+  "<strong>{char_count$NAME} County </strong> <br/>",
+  "Population: {char_count$pop} <br/>",
+  "Cases, total {char_count$sum_cases} <br/>",
+  "Deaths, total: {char_count$sum_deaths} <br/>",
+  "Cases, rate: {char_count$sum_cases_rate} <br/>",
+  "Deaths, rate: {char_count$sum_deaths_rate} <br/>"
 ) %>% 
   lapply(htmltools::HTML)
 
 pal1 <- colorBin(
   palette = "Greens",
   na.color = NA,
-  bins = c(0, 1, 5, 25, 100, 250, max(covid_count$sum_cases)),
-  domain = char_count@data$sum_cases
+  bins = c(0, 100, 500, 2500, 5000, 15000, max(covid_count$sum_cases)),
+  domain = char_count$sum_cases
 )
 
 pal2 <- colorBin(
   palette = "Blues",
   na.color = NA,
-  bins = c(0, 1, 10, max(covid_count$sum_deaths)),
-  domain = char_count@data$sum_deaths
+  bins = c(0, 100, 200, max(covid_count$sum_deaths)),
+  domain = char_count$sum_deaths
 )
 
 pal3 <- colorNumeric(
   palette = "Greens",
   na.color = NA,
-  domain = char_count@data$sum_cases_rate)
+  domain = char_count$sum_cases_rate)
 
 pal4 <- colorNumeric(
   palette = "Blues",
   na.color = NA,
-  domain = char_count@data$sum_deaths_rate)
+  domain = char_count$sum_deaths_rate)
 
 
 p1 <- list()
@@ -147,7 +147,7 @@ p2 <- list()
 p3 <- list()
 p4 <- list()
 
-counties <- distinct(char_count@data, NAME)
+counties <- distinct(char_count, NAME)
 
 ymin <- 0
 
